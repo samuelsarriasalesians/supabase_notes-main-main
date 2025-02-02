@@ -16,6 +16,13 @@ class HomeView extends GetView<HomeController> {
           title: const Text('HOME'),
           centerTitle: true,
           actions: [
+            // Search bar
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                showSearch(context: context, delegate: NotesSearchDelegate(controller));
+              },
+            ),
             // Botón para navegar al perfil del usuario
             IconButton(
               onPressed: () async {
@@ -71,5 +78,93 @@ class HomeView extends GetView<HomeController> {
           onPressed: () => Get.toNamed(Routes.ADD_NOTE),
           child: const Icon(Icons.add),
         ));
+  }
+}
+
+class NotesSearchDelegate extends SearchDelegate {
+  final HomeController controller;
+
+  NotesSearchDelegate(this.controller);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = controller.allNotes.where((note) => note.title!.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        Notes task = results[index];
+        final DateFormat formatter = DateFormat('dd/MM/yyyy');
+        final String formattedDate = formatter.format(DateTime.parse(task.date.toString()));
+
+        return ListTile(
+          onTap: () {
+            Get.toNamed(Routes.EDIT_NOTE, arguments: task);
+            close(context, null);
+          },
+          leading: CircleAvatar(
+            child: Text("t${task.id}"),
+          ),
+          title: Text("title: ${task.title}"),
+          subtitle: Text("description: ${task.description}\ndate: ${formattedDate}"),
+          trailing: IconButton(
+            onPressed: () async => await controller.deleteNote(task.id!),
+            icon: const Icon(Icons.delete),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = controller.allNotes.where((note) => note.title!.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        Notes task = suggestions[index];
+        final DateFormat formatter = DateFormat('dd/MM/yyyy');
+        final String formattedDate = formatter.format(DateTime.parse(task.date.toString()));
+
+        return ListTile(
+          onTap: () {
+            Get.toNamed(Routes.EDIT_NOTE, arguments: task);
+            close(context, null);
+          },
+          leading: CircleAvatar(
+            child: Text("t${task.id}"),
+          ),
+          title: Text("title: ${task.title}"),
+          subtitle: Text("description: ${task.description}\ndate: ${formattedDate}"),
+          trailing: IconButton(
+            onPressed: () async => await controller.deleteNote(task.id!),
+            icon: const Icon(Icons.delete),
+          ),
+        );
+      },
+    );
   }
 }

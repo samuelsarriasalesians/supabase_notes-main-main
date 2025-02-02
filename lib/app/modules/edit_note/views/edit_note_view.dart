@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_notes/app/data/models/notes_model.dart';
 import 'package:supabase_notes/app/modules/home/controllers/home_controller.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../controllers/edit_note_controller.dart';
 
 // Vista para editar un task existente, utilizando el controlador EditNoteController
@@ -12,6 +13,8 @@ class EditNoteView extends GetView<EditNoteController> {
   Notes note = Get.arguments;
 
   HomeController homeC = Get.find();
+
+  Color noteColor = Colors.white;
 
   EditNoteView({super.key});
 
@@ -27,6 +30,7 @@ class EditNoteView extends GetView<EditNoteController> {
       appBar: AppBar(
         title: const Text('Edit Task'), // Título de la pantalla
         centerTitle: true, // Centra el título en la barra de navegación
+        backgroundColor: noteColor,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -70,6 +74,32 @@ class EditNoteView extends GetView<EditNoteController> {
               )),
           const SizedBox(height: 20),
 
+          // Color picker for the note
+          ListTile(
+            title: const Text("Pick a color"),
+            trailing: CircleAvatar(
+              backgroundColor: noteColor,
+            ),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Pick a color"),
+                  content: SingleChildScrollView(
+                    child: BlockPicker(
+                      pickerColor: noteColor,
+                      onColorChanged: (color) {
+                        noteColor = color;
+                        Get.back();
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+
           // Botón para guardar la edición del task
           Obx(() => ElevatedButton(
                 onPressed: () async {
@@ -84,6 +114,9 @@ class EditNoteView extends GetView<EditNoteController> {
                   }
                 },
                 child: Text(controller.isLoading.isFalse ? "Edit note" : "Loading..."), // Texto dinámico en el botón
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: noteColor,
+                ),
               )),
         ],
       ),
